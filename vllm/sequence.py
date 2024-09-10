@@ -410,12 +410,14 @@ class SequenceGroup:
         seqs: List[Sequence],
         sampling_params: SamplingParams,
         arrival_time: float,
+        num_remaining_tokens: int,
         lora_request: Optional[LoRARequest] = None,
         multi_modal_data: Optional[MultiModalData] = None,
     ) -> None:
         self.request_id = request_id
         self.seqs_dict = {seq.seq_id: seq for seq in seqs}
         self.sampling_params = sampling_params
+        self.num_remaining_tokens = num_remaining_tokens
         self.metrics = RequestMetrics(arrival_time=arrival_time,
                                       last_token_time=arrival_time,
                                       first_scheduled_time=None,
@@ -425,6 +427,9 @@ class SequenceGroup:
         self.prompt_logprobs: Optional[PromptLogprobs] = None
         self.state = SequenceGroupState()
         self.multi_modal_data = multi_modal_data
+        
+    def __lt__(self, other):
+        return self.num_remaining_tokens < other.num_remaining_tokens
 
     @property
     def prompt(self) -> str:

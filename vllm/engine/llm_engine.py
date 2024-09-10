@@ -355,6 +355,7 @@ class LLMEngine:
         request_id: str,
         prompt: Optional[str],
         sampling_params: SamplingParams,
+        num_remaining_tokens: int,
         prompt_token_ids: Optional[List[int]] = None,
         arrival_time: Optional[float] = None,
         lora_request: Optional[LoRARequest] = None,
@@ -444,7 +445,8 @@ class LLMEngine:
 
         # Create the sequence group.
         seq_group = SequenceGroup(request_id, [seq], sampling_params,
-                                  arrival_time, lora_request, multi_modal_data)
+                                  arrival_time, num_remaining_tokens, 
+                                  lora_request, multi_modal_data)
 
         # Add the sequence group to the scheduler.
         self.scheduler.add_seq_group(seq_group)

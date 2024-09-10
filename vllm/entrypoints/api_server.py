@@ -48,7 +48,13 @@ async def generate(request: Request) -> Response:
     request_id = random_uuid()
 
     assert engine is not None
-    results_generator = engine.generate(prompt, sampling_params, request_id)
+    assert sampling_params.max_tokens is not None
+    results_generator = engine.generate(
+        prompt,
+        sampling_params,
+        request_id,
+        num_remaining_tokens=sampling_params.max_tokens
+    )
 
     # Streaming case
     async def stream_results() -> AsyncGenerator[bytes, None]:
@@ -58,7 +64,7 @@ async def generate(request: Request) -> Response:
                 prompt + output.text for output in request_output.outputs
             ]
             ret = {"text": text_outputs}
-            yield (json.dumps(ret) + "\0").encode("utf-8")
+            yield (json.dumps(ret) + "\n").encode("utf-8")
 
     if stream:
         return StreamingResponse(stream_results())
