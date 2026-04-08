@@ -292,8 +292,12 @@ class DeepseekV32IndexerMetadataBuilder(AttentionMetadataBuilder):
         self.offsets_buffer = torch.arange(
             next_n, device=self.device, dtype=torch.int32
         )
+        # Use max_num_batched_tokens (not max_num_seqs * next_n) to match the
+        # other expanded_* buffers. During CUDAGraph dummy runs with DP, stale
+        # query_start_loc entries can inflate actual_expanded beyond
+        # max_num_seqs * next_n, causing an out-of-bounds GPU write (CUDA IMA).
         self.arange_buffer = torch.arange(
-            scheduler_config.max_num_seqs * next_n,
+            scheduler_config.max_num_batched_tokens,
             dtype=torch.int32,
             device=self.device,
         )
